@@ -1,15 +1,11 @@
 clear all;
 data = csvread('example2.dat');
-% figure,
-% hold on;
-% for i = 1:size(data)
-%    plot(data(i, 1), data(i, 2), 'g+');
-% end
-% hold off;
-% grid on;
 affinity = CalculateAffinity(data);
+
+G = graph(data(:,1), data(:,2), data(:,3));
 figure,
-plot(affinity);
+plot(G);
+
 row_sum = sum(affinity, 2);
 D = diag(row_sum);
 for i=1:size(affinity,1)
@@ -18,9 +14,8 @@ for i=1:size(affinity,1)
     end
 end
 [eigVectors,eigValues] = eig(L);
-% figure,
-% plot(eigValues);
-k = 7;
+
+k = 2;
 X = eigVectors(:,(size(eigVectors,1)-(k-1)): size(eigVectors,1));
 
 for i = 1:size(X, 1)
