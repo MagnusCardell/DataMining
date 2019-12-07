@@ -3,12 +3,14 @@ package se.kth.jabeja;
 import org.apache.log4j.Logger;
 import se.kth.jabeja.config.Config;
 import se.kth.jabeja.config.NodeSelectionPolicy;
+import se.kth.jabeja.config.TaskName;
 import se.kth.jabeja.io.FileIO;
 import se.kth.jabeja.rand.RandNoGenerator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.Random;
 
 public class Jabeja {
   final static Logger logger = Logger.getLogger(Jabeja.class);
@@ -19,6 +21,7 @@ public class Jabeja {
   private int round;
   private float T;
   private boolean resultFileCreated = false;
+  private TaskName taskName;
 
   //-------------------------------------------------------------------
   public Jabeja(HashMap<Integer, Node> graph, Config config) {
@@ -28,32 +31,58 @@ public class Jabeja {
     this.numberOfSwaps = 0;
     this.config = config;
     this.T = config.getTemperature();
+    this.taskName = config.getTaskName();
   }
 
 
   //-------------------------------------------------------------------
   public void startJabeja() throws IOException {
+    int k = 0;
     for (round = 0; round < config.getRounds(); round++) {
       for (int id : entireGraph.keySet()) {
         sampleAndSwap(id);
       }
-
+      if (taskName == TaskName.TASK2) {
+        if (round % 400 == 0) {
+          T = config.getTemperature();
+        }
+      } else if (taskName == TaskName.BONUS) {
+        if (round % 400 == 0) {
+          T = config.getTemperature();
+        }
+      }
       //one cycle for all nodes have completed.
       //reduce the temperature
-      saCoolDown();
+      saCoolDown(k);
       report();
+      k++;
     }
   }
 
   /**
    * Simulated analealing cooling function
    */
-  private void saCoolDown(){
-    // TODO for second task
-    if (T > 1)
-      T -= config.getDelta();
-    if (T < 1)
-      T = 1;
+  private void saCoolDown(int k){
+    double alpha = 0.9;
+    double T_min = 0.00001;
+    if (taskName == TaskName.TASK1) {
+      if (T > 1)
+        T -= config.getDelta();
+      if (T < 1)
+        T = 1;
+    } else if (taskName == TaskName.TASK2) {
+      if (T > T_min) {
+        T *= alpha;
+      } else {
+        T = 1;
+      }
+    } else if (taskName == TaskName.BONUS) {
+      if (T > T_min) {
+      T /= Math.log(k);
+      } else {
+        T = 1;
+      }
+    }
   }
 
   /**
@@ -76,15 +105,18 @@ public class Jabeja {
       partner = findPartner(nodeId, getSample(nodeId));
     }
 
-//    if (partner == null) {
-//      partner = findPartner(nodeId, getSample(nodeId));
-//    }
+    if (partner == null) {
+      partner = findPartner(nodeId, getSample(nodeId));
+    }
     // swap the colors
     if (partner != null) {
       int partnerColor = partner.getColor();
       int nodepColor = nodep.getColor();
-      partner.setColor(nodepColor);
-      nodep.setColor(partnerColor);
+      if (partnerColor != nodepColor) {
+        partner.setColor(nodepColor);
+        nodep.setColor(partnerColor);
+        this.numberOfSwaps++;
+      }
     }
   }
 
@@ -105,13 +137,30 @@ public class Jabeja {
       int dqp = getDegree(nodeq, nodep.getColor());
       double new_val = Math.pow(dpq, alpha) + Math.pow(dqp, alpha);
 
-      if ((new_val * T > old_val) && (new_val > highestBenefit)) {
-        bestPartner = nodeq;
-        highestBenefit = new_val;
+      Random rand = new Random();
+      double randNum = rand.nextDouble();
+      double ap = getAp(new_val, old_val);
+      if (taskName == TaskName.TASK1) {
+        if ((new_val * T > old_val) && (new_val > highestBenefit)) {
+          bestPartner = nodeq;
+          highestBenefit = new_val;
+        }
+      } else if (taskName == TaskName.TASK2) {
+        if (ap > randNum) {
+          bestPartner = nodeq;
+        }
+      } else if (taskName == TaskName.BONUS) {
+        if (ap > randNum) {
+          bestPartner = nodeq;
+        }
       }
     }
-
     return bestPartner;
+  }
+
+  private double getAp(double new_val, double old_val) {
+    double ap = Math.exp((new_val - old_val)/T);
+    return ap;
   }
 
   /**

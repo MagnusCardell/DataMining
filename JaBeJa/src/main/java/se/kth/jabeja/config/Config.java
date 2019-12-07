@@ -13,6 +13,7 @@ public class Config {
   private GraphInitColorPolicy initColorPolicy;
   private NodeSelectionPolicy nodeSelectionPolicy;
   private Float alpha;
+  private TaskName taskName;
 
   public Config setAlpha(Float alpha) {
     this.alpha = alpha;
@@ -71,6 +72,11 @@ public class Config {
 
   public Config setUniformRandSampleSize(Integer rnd_list_size) {
     this.uniformRandomSampleSize = rnd_list_size;
+    return this;
+  }
+
+  public Config setTaskName(TaskName taskName) {
+    this.taskName = taskName;
     return this;
   }
 
@@ -142,6 +148,13 @@ public class Config {
       throw new NullPointerException("Node selection policy is not defined.");
     }
     return nodeSelectionPolicy;
+  }
+
+  public TaskName getTaskName() {
+    if (taskName == null) {
+      throw new NullPointerException("Task selection policy is not defined.");
+    }
+    return taskName;
   }
 
   public String getOutputDir() {
