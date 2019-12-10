@@ -73,14 +73,10 @@ public class Jabeja {
     } else if (taskName == TaskName.TASK2) {
       if (T > T_min) {
         T *= alpha;
-      } else {
-        T = 1;
       }
     } else if (taskName == TaskName.BONUS) {
       if (T > T_min) {
-      T /= Math.log(k);
-      } else {
-        T = 1;
+        T /= Math.log(k);
       }
     }
   }
@@ -277,7 +273,8 @@ public class Jabeja {
     logger.info("round: " + round +
             ", edge cut:" + edgeCut +
             ", swaps: " + numberOfSwaps +
-            ", migrations: " + migrations);
+            ", migrations: " + migrations +
+            ", temp: " + T);
 
     saveToFile(edgeCut, migrations);
   }
