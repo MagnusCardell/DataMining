@@ -1,6 +1,5 @@
 package se.kth.jabeja;
 
-import javafx.concurrent.Task;
 import org.apache.log4j.Logger;
 import se.kth.jabeja.config.Config;
 import se.kth.jabeja.config.NodeSelectionPolicy;
@@ -44,12 +43,10 @@ public class Jabeja {
         sampleAndSwap(id);
       }
       if (taskName == TaskName.TASK2) {
-        System.out.println("Task2");
         if (round % 400 == 0) {
           T = config.getTemperature();
         }
       } else if (taskName == TaskName.BONUS) {
-        System.out.println("Bonus");
         if (round % 300 == 0) {
           T = config.getTemperature();
         }
@@ -77,6 +74,8 @@ public class Jabeja {
       if (T > T_min) {
         T *= alpha;
       }
+      if (T < 1)
+        T = 1;
     } else if (taskName == TaskName.BONUS) {
       if (T > T_min) {
         T /= Math.log(k);
@@ -101,12 +100,11 @@ public class Jabeja {
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
       // if local policy fails then randomly sample the entire graph
-      partner = findPartner(nodeId, getSample(nodeId));
+      if (partner == null) {
+        partner = findPartner(nodeId, getSample(nodeId));
+      }
     }
 
-    if (partner == null) {
-      partner = findPartner(nodeId, getSample(nodeId));
-    }
     // swap the colors
     if (partner != null) {
       int partnerColor = partner.getColor();
