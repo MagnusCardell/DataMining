@@ -1,5 +1,6 @@
 package se.kth.jabeja;
 
+import javafx.concurrent.Task;
 import org.apache.log4j.Logger;
 import se.kth.jabeja.config.Config;
 import se.kth.jabeja.config.NodeSelectionPolicy;
@@ -43,11 +44,13 @@ public class Jabeja {
         sampleAndSwap(id);
       }
       if (taskName == TaskName.TASK2) {
+        System.out.println("Task2");
         if (round % 400 == 0) {
           T = config.getTemperature();
         }
       } else if (taskName == TaskName.BONUS) {
-        if (round % 400 == 0) {
+        System.out.println("Bonus");
+        if (round % 300 == 0) {
           T = config.getTemperature();
         }
       }
@@ -63,7 +66,7 @@ public class Jabeja {
    * Simulated analealing cooling function
    */
   private void saCoolDown(int k){
-    double alpha = 0.9;
+    double alpha = 0.95;
     double T_min = 0.00001;
     if (taskName == TaskName.TASK1) {
       if (T > 1)
@@ -121,8 +124,9 @@ public class Jabeja {
     Node nodep = entireGraph.get(nodeId);
 
     Node bestPartner = null;
-    double highestBenefit = 0;
+    double highestBenefit = 0.0;
     double alpha = config.getAlpha();
+    double previousAP = 0.0;
 
     for (Integer nodeqId : nodes) {
       Node nodeq = entireGraph.get(nodeqId);
@@ -144,10 +148,13 @@ public class Jabeja {
       } else if (taskName == TaskName.TASK2) {
         if (ap > randNum) {
           bestPartner = nodeq;
+//          highestBenefit = new_val;
         }
       } else if (taskName == TaskName.BONUS) {
-        if (ap > randNum) {
+        if (ap > randNum && ap > previousAP) {
           bestPartner = nodeq;
+          previousAP = ap;
+//          highestBenefit = new_val;
         }
       }
     }
