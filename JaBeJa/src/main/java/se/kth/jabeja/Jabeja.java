@@ -37,6 +37,7 @@ public class Jabeja {
 
   //-------------------------------------------------------------------
   public void startJabeja() throws IOException {
+    long begin = System.currentTimeMillis();
     int k = 0;
     for (round = 0; round < config.getRounds(); round++) {
       for (int id : entireGraph.keySet()) {
@@ -57,6 +58,8 @@ public class Jabeja {
       report();
       k++;
     }
+    long end = System.currentTimeMillis();
+    logger.info("Processing Time: " + (end - begin)/1000);
   }
 
   /**
